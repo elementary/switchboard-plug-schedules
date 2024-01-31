@@ -7,7 +7,7 @@ public class Schedules.MainView : Switchboard.SettingsPage {
     }
 
     construct {
-        var empty_alert = new Granite.Placeholder (_("Launch Apps on Startup")) {
+        var empty_alert = new Granite.Placeholder (_("Schedules")) {
             description = _("Add apps to the Startup list by clicking the icon in the toolbar below."),
             icon = new ThemedIcon ("system-restart")
         };
@@ -50,5 +50,11 @@ public class Schedules.MainView : Switchboard.SettingsPage {
         };
 
         child = frame;
+
+        Schedule.init.begin (() => {
+            list.bind_model (Schedule.schedules, (obj) => {
+                return new ScheduleRow ((Schedule) obj);
+            });
+        });
     }
 }
