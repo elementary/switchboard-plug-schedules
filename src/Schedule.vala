@@ -16,7 +16,7 @@ public interface Schedules.ScheduleManager : Object {
     }
 
     public abstract async void create_schedule (Parsed parsed) throws IOError, DBusError;
-    public abstract async void delete_schedule (string name) throws IOError, DBusError;
+    public abstract async void delete_schedule (string id) throws IOError, DBusError;
     public abstract async Parsed[] list_schedules () throws IOError, DBusError;
     public abstract async void update_schedule (Parsed parsed) throws IOError, DBusError;
 }
@@ -123,5 +123,15 @@ public class Schedules.Schedule : Object {
         };
 
         return result;
+    }
+
+    public async void delete () {
+        try  {
+            yield manager.delete_schedule (id);
+        } catch (Error e) {
+            warning ("Failed to delete schedule: %s", e.message);
+        }
+
+        reload_schedules.begin ();
     }
 }

@@ -16,10 +16,13 @@ public class Schedules.ScheduleRow : Gtk.ListBoxRow {
             valign = CENTER
         };
 
+        var delete_button = new Gtk.Button.from_icon_name ("edit-delete-symbolic");
+
         var box = new Gtk.Box (HORIZONTAL, 6);
         box.append (label);
         box.append (edit_button);
         box.append (enabled_switch);
+        box.append (delete_button);
 
         child = box;
 
@@ -27,5 +30,7 @@ public class Schedules.ScheduleRow : Gtk.ListBoxRow {
         schedule.bind_property ("enabled", enabled_switch, "active", SYNC_CREATE | BIDIRECTIONAL);
 
         edit_button.clicked.connect (() => new ScheduleDialog (schedule).present ());
+
+        delete_button.clicked.connect (() => schedule.delete.begin ());
     }
 }
