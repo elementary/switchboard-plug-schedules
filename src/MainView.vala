@@ -56,5 +56,7 @@ public class Schedules.MainView : Switchboard.SettingsPage {
                 return new ScheduleRow ((Schedule) obj);
             });
         });
+
+        add_button.clicked.connect (() => Schedule.create_new.begin ());
     }
 }

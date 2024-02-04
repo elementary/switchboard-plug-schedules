@@ -3,6 +3,7 @@ plug_files = files(
     'Plug.vala',
     'Schedule.vala',
     'ScheduleRow.vala',
+    'ScheduleDialog.vala',
 )
 
 switchboard_dep = dependency('switchboard-3')
