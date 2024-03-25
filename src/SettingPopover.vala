@@ -10,7 +10,9 @@ public class Schedules.SettingPopover : Gtk.Popover {
             halign = END
         };
 
-        var kind_drop_down = new Gtk.DropDown.from_strings (Setting.settings);
+        var kind_drop_down = new Gtk.DropDown.from_strings (Setting.settings) {
+            selected = setting.get_index ()
+        };
         var size_group = new Gtk.SizeGroup (HORIZONTAL);
         size_group.add_widget (kind_drop_down.get_first_child ());
         size_group.add_widget (kind_drop_down.get_last_child ().get_first_child ());
@@ -34,6 +36,10 @@ public class Schedules.SettingPopover : Gtk.Popover {
         val_switch.state_set.connect ((new_state) => {
             setting.val = new_state;
             return false;
+        });
+
+        kind_drop_down.notify["selected"].connect (() => {
+            setting.set_name_from_index (kind_drop_down.selected);
         });
     }
 

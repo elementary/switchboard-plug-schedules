@@ -14,6 +14,20 @@ public class Schedules.Setting : Object {
     }
 
     public Setting.from_index (uint index) {
+        set_name_from_index (index);
+    }
+
+    construct {
+        notify.connect ((pspec) => {
+            var name = pspec.get_name ();
+            if (name == "name" || name == "display-name" || name == "val") {
+                warning ("Setting changed");
+                changed ();
+            }
+        });
+    }
+
+    public void set_name_from_index (uint index) {
         switch (index) {
             case 0:
                 name = "dnd";
@@ -35,13 +49,21 @@ public class Schedules.Setting : Object {
         display_name = settings[index];
     }
 
-    construct {
-        notify.connect ((pspec) => {
-            var name = pspec.get_name ();
-            if (name == "name" || name == "display-name" || name == "val") {
-                changed ();
-            }
-        });
+    public uint get_index () {
+        switch (name) {
+            case "dnd":
+                return 0;
+
+            case "dark-mode":
+                return 1;
+
+            case "night-light":
+                return 2;
+
+            default:
+                warning ("This shouldn't be reached");
+                return Gtk.INVALID_LIST_POSITION;
+        }
     }
 
     public static ListStore list_from_table (HashTable<string, Variant> table) {

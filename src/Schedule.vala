@@ -154,4 +154,13 @@ public class Schedules.Schedule : Object {
         setting.changed.connect (() =>  manager.update_schedule.begin (to_parsed ()));
         manager.update_schedule.begin (to_parsed ());
     }
+
+    public void remove_setting (Setting setting) {
+        //TODO: remove inverted setting
+        uint position;
+        if (active_settings.find (setting, out position)) {
+            active_settings.remove (position);
+            manager.update_schedule.begin (to_parsed ());
+        }
+    }
 }
