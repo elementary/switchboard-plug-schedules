@@ -85,19 +85,24 @@ public class Schedules.Schedule : Object {
     }
 
     public string id { get; protected set; }
-    public Type schedule_type;
+    public ScheduleManager.Type schedule_type { get; set; }
     public string name { get; set; }
     public bool enabled { get; set; }
 
     public ListStore active_settings;
     public ListStore inactive_settings;
 
+    private HashTable<string, Variant> private_args;
+
     public Schedule.from_parsed (ScheduleManager.Parsed parsed) {
         id = parsed.id;
+        schedule_type = parsed.type;
         name = parsed.name;
         enabled = parsed.enabled;
         active_settings = new ListStore (typeof (Setting));
         inactive_settings = Setting.list_from_table (parsed.inactive_settings);
+
+        private_args = parsed.args;
 
         notify.connect ((pspec) => {
             var name = pspec.get_name ();
@@ -116,15 +121,7 @@ public class Schedules.Schedule : Object {
         }
     }
 
-    public ScheduleManager.Parsed to_parsed () {
-        var private_args = new HashTable<string, Variant> (str_hash, str_equal);
-        private_args["from"] = (double) 1f;
-        private_args["to"] = (double) 1f;
-
-        if (schedule_type == ScheduleManager.Type.MANUAL) {
-            //todo
-        }
-
+    private ScheduleManager.Parsed to_parsed () {
         ScheduleManager.Parsed result = {
             id,
             schedule_type,
@@ -146,6 +143,42 @@ public class Schedules.Schedule : Object {
         }
 
         reload_schedules.begin ();
+    }
+
+    public void set_manual_time (DateTime from, DateTime to) {
+        private_args["from"] = date_time_to_double (from);
+        private_args["to"] = date_time_to_double (to);
+
+        manager.update_schedule.begin (to_parsed ());
+    }
+
+    private double date_time_to_double (DateTime date_time) {
+        double time_double = 0;
+        time_double += date_time.get_hour ();
+        time_double += (double) date_time.get_minute () / 60;
+        return time_double;
+    }
+
+    public DateTime? get_manual_from_time () {
+        if ("from" in private_args) {
+            return double_to_date_time ((double) private_args["from"]);
+        }
+
+        return null;
+    }
+
+    public DateTime? get_manual_to_time () {
+        if ("to" in private_args) {
+            return double_to_date_time ((double) private_args["to"]);
+        }
+
+        return null;
+    }
+
+    private DateTime double_to_date_time (double val) {
+        var hours = (int) val;
+        var minutes = (int) (val - hours) * 60;
+        return new DateTime.local (1, 1, 1, hours, minutes, 0);
     }
 
     public void add_setting (Setting setting) {
