@@ -59,7 +59,7 @@ public class Schedules.Setting : Object {
         var result = new HashTable<string, Variant> (str_hash, str_equal);
 
         for (int i = 0; i < list.get_n_items (); i++) {
-            var setting = (Setting)list.get_item (i);
+            var setting = (Setting) list.get_item (i);
             result[setting.name] = setting.val;
         }
 

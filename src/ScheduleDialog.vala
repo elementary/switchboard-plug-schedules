@@ -9,6 +9,7 @@ public class Schedules.ScheduleDialog : Gtk.Window {
         var name_entry = new Gtk.Entry ();
 
         var list_box = new Gtk.ListBox ();
+        list_box.add_css_class (Granite.STYLE_CLASS_RICH_LIST);
 
         var scrolled = new Gtk.ScrolledWindow () {
             child = list_box,
@@ -61,7 +62,7 @@ public class Schedules.ScheduleDialog : Gtk.Window {
         });
 
         add_button.clicked.connect (() => {
-            schedule.active_settings.append (new Setting ("dnd", true));
+            schedule.add_setting (new Setting ("dnd", true));
         });
     }
 }

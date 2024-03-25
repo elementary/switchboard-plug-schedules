@@ -30,6 +30,11 @@ public class Schedules.SettingPopover : Gtk.Popover {
         grid.attach (val_switch, 1, 1);
 
         child = grid;
+
+        val_switch.state_set.connect ((new_state) => {
+            setting.val = new_state;
+            return false;
+        });
     }
 
     private static Gtk.SignalListItemFactory create_fixed_width_factory () {

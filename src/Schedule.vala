@@ -118,6 +118,8 @@ public class Schedules.Schedule : Object {
 
     public ScheduleManager.Parsed to_parsed () {
         var private_args = new HashTable<string, Variant> (str_hash, str_equal);
+        private_args["from"] = (double) 1f;
+        private_args["to"] = (double) 1f;
 
         if (schedule_type == ScheduleManager.Type.MANUAL) {
             //todo
@@ -147,7 +149,9 @@ public class Schedules.Schedule : Object {
     }
 
     public void add_setting (Setting setting) {
+        //TODO: add and bind inverted setting
         active_settings.append (setting);
-        setting.changed.connect (() => manager.update_schedule.begin (to_parsed ()));
+        setting.changed.connect (() =>  manager.update_schedule.begin (to_parsed ()));
+        manager.update_schedule.begin (to_parsed ());
     }
 }
