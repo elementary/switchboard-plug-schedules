@@ -36,6 +36,7 @@ public class Schedules.Schedule : Object {
             );
             yield reload_schedules ();
         } catch (Error e) {
+            //TODO: display error in list
             warning ("Failed to get proxy: %s", e.message);
         }
     }
@@ -87,15 +88,16 @@ public class Schedules.Schedule : Object {
     public Type schedule_type;
     public string name { get; set; }
     public bool enabled { get; set; }
-    public HashTable<string, Variant> active_settings;
-    public HashTable<string, Variant> inactive_settings;
+
+    public ListStore active_settings;
+    public ListStore inactive_settings;
 
     public Schedule.from_parsed (ScheduleManager.Parsed parsed) {
         id = parsed.id;
         name = parsed.name;
         enabled = parsed.enabled;
-        active_settings = parsed.active_settings;
-        inactive_settings = parsed.inactive_settings;
+        active_settings = new ListStore (typeof (Setting));
+        inactive_settings = Setting.list_from_table (parsed.inactive_settings);
 
         notify.connect ((pspec) => {
             var name = pspec.get_name ();
@@ -103,6 +105,15 @@ public class Schedules.Schedule : Object {
                 manager.update_schedule.begin (to_parsed ());
             }
         });
+
+        fill_from_table (parsed.active_settings);
+    }
+
+    private void fill_from_table (HashTable<string, Variant> table) {
+        foreach (var setting_name in table.get_keys ()) {
+            var setting = new Setting (setting_name, table[setting_name]);
+            add_setting (setting);
+        }
     }
 
     public ScheduleManager.Parsed to_parsed () {
@@ -118,8 +129,8 @@ public class Schedules.Schedule : Object {
             name,
             enabled,
             private_args,
-            active_settings,
-            inactive_settings
+            Setting.list_to_table (active_settings),
+            Setting.list_to_table (inactive_settings)
         };
 
         return result;
@@ -133,5 +144,10 @@ public class Schedules.Schedule : Object {
         }
 
         reload_schedules.begin ();
+    }
+
+    public void add_setting (Setting setting) {
+        active_settings.append (setting);
+        setting.changed.connect (() => manager.update_schedule.begin (to_parsed ()));
     }
 }
