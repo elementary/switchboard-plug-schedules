@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>io.elementary.settings.schedules</id>
+  <extends>io.elementary.settings</extends>
+  <translation type="gettext">io.elementary.settings.schedules</translation>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+
+  <icon type="stock">media-playlist-repeat</icon>
+  <name>Schedules</name>
+  <summary>Configure schedules to automatically toggle certain settings</summary>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>todo</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <url type="homepage">https://elementary.io/</url>
+  <url type="bugtracker">https://github.com/elementary/switchboard-plug-pantheon-shell/issues</url>
+  <url type="donation">https://elementary.io/get-involved#funding</url>
+  <url type="help">https://github.com/elementary/switchboard-plug-pantheon-shell/discussions</url>
+  <url type="translate">https://l10n.elementary.io/engage/switchboard/</url>
+
+  <developer_name>elementary, Inc.</developer_name>
+  <project_group>elementary</project_group>
+  <update_contact>contact_at_elementary.io</update_contact>
+
+  <releases>
+    <release version="1.0.0" date="" urgency="medium">
+      <description>
+        <p>Initial Release</p>
+      </description>
+    </release>
+  </releases>
+</component>

@@ -1,5 +1,5 @@
 public class Schedules.Setting : Object {
-    public static string[] settings = {_("DND"), _("Dark Mode"), _("Night Light")};
+    public static string[] settings = {_("Do Not Disturb"), _("Dark Mode"), _("Night Light"), _("Monochrome")};
 
     public signal void changed ();
 
@@ -41,6 +41,10 @@ public class Schedules.Setting : Object {
                 name = "night-light";
                 break;
 
+            case 3:
+                name = "monochrome";
+                break;
+
             default:
                 warning ("This shouldn't be reached");
                 break;
@@ -59,6 +63,9 @@ public class Schedules.Setting : Object {
 
             case "night-light":
                 return 2;
+
+            case "monochrome":
+                return 3;
 
             default:
                 warning ("This shouldn't be reached");
