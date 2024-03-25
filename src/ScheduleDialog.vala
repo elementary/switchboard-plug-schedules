@@ -2,7 +2,11 @@ public class Schedules.ScheduleDialog : Gtk.Window {
     public Schedule schedule { get; construct; }
 
     public ScheduleDialog (Schedule schedule) {
-        Object (schedule: schedule);
+        Object (
+            schedule: schedule,
+            default_height: 500,
+            default_width: 500
+        );
     }
 
     construct {
