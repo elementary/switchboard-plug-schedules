@@ -17,12 +17,19 @@ public class Schedules.SettingRow : Gtk.ListBoxRow {
             popover = new SettingPopover (setting)
         };
 
+        var remove_button = new Gtk.Button () {
+            icon_name = "edit-delete-symbolic"
+        };
+
         var box = new Gtk.Box (HORIZONTAL, 6);
         box.append (label);
         box.append (edit_button);
+        box.append (remove_button);
 
         child = box;
 
         setting.bind_property ("display-name", label, "label", DEFAULT);
+
+        remove_button.clicked.connect (() => setting.removed ());
     }
 }

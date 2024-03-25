@@ -178,10 +178,12 @@ public class Schedules.Schedule : Object {
         //TODO: add and bind inverted setting
         active_settings.append (setting);
         setting.changed.connect (() =>  manager.update_schedule.begin (to_parsed ()));
+        setting.removed.connect (remove_setting);
+
         manager.update_schedule.begin (to_parsed ());
     }
 
-    public void remove_setting (Setting setting) {
+    private void remove_setting (Setting setting) {
         //TODO: remove inverted setting
         uint position;
         if (active_settings.find (setting, out position)) {

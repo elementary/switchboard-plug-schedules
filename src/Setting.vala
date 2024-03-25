@@ -1,6 +1,7 @@
 public class Schedules.Setting : Object {
     public static string[] settings = {_("Do Not Disturb"), _("Dark Mode"), _("Night Light"), _("Monochrome")};
 
+    public signal void removed ();
     public signal void changed ();
 
     public string name { get; private set; }
