@@ -1,0 +1,8 @@
+src/MainView.vala
+src/Plug.vala
+src/Schedule.vala
+src/ScheduleDialog.vala
+src/ScheduleRow.vala
+src/Setting.vala
+src/SettingPopover.vala
+src/SettingRow.vala
