@@ -12,7 +12,7 @@ public class Schedules.Plug : Switchboard.Plug {
             code_name: "io.elementary.settings.schedules",
             display_name: _("Schedules"),
             description: _("View and edit schedules"),
-            icon: ""
+            icon: "media-playlist-repeat"
         );
     }
 

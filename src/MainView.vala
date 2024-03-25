@@ -2,7 +2,8 @@ public class Schedules.MainView : Switchboard.SettingsPage {
     public MainView () {
         Object (
             title: _("Schedules"),
-            description: _("Manage your schedules")
+            description: _("Manage your schedules"),
+            icon: new ThemedIcon ("media-playlist-repeat")
         );
     }
 
