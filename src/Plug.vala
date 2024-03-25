@@ -2,7 +2,7 @@
  */
 
 public class Schedules.Plug : Switchboard.Plug {
-    private MainView? main_view;
+    private Gtk.Box? box;
 
     public Plug () {
         GLib.Intl.bindtextdomain (Schedules.GETTEXT_PACKAGE, Schedules.LOCALEDIR);
@@ -17,11 +17,22 @@ public class Schedules.Plug : Switchboard.Plug {
     }
 
     public override Gtk.Widget get_widget () {
-        if (main_view == null) {
-            main_view = new MainView ();
+        if (box == null) {
+            var header_bar = new Adw.HeaderBar () {
+                title_widget = new Gtk.Grid () //todo replace with show_title
+            };
+            header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
+
+            var main_view = new MainView () {
+                vexpand = true
+            };
+
+            box = new Gtk.Box (VERTICAL, 0);
+            box.append (header_bar);
+            box.append (main_view);
         }
 
-        return main_view;
+        return box;
     }
 
     public override void shown () {
