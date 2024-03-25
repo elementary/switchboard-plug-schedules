@@ -9,7 +9,7 @@ public class Schedules.Setting : Object {
 
     public Setting (string name, Variant val) {
         this.name = name;
-        this.display_name = "Placeholder for now";
+        this.display_name = settings[get_index ()];
         this.val = val;
     }
 

@@ -22,10 +22,18 @@ public class Schedules.SettingPopover : Gtk.Popover {
         };
 
         var val_switch = new Gtk.Switch () {
-            state = (bool) setting.val
+            state = (bool) setting.val,
+            halign = START
         };
 
-        var grid = new Gtk.Grid ();
+        var grid = new Gtk.Grid () {
+            column_spacing = 3,
+            row_spacing = 3,
+            margin_top = 6,
+            margin_bottom = 6,
+            margin_start = 6,
+            margin_end = 6
+        };
         grid.attach (kind_label, 0, 0);
         grid.attach (kind_drop_down, 1, 0);
         grid.attach (val_label, 0, 1);
