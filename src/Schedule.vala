@@ -50,7 +50,7 @@ public class Schedules.Schedule : Object {
 
         try {
             foreach (var parsed in yield manager.list_schedules ()) {
-                new_schedules += new Schedule.from_parsed (parsed);
+                new_schedules += new Schedule (parsed);
             }
         } catch (Error e) {
             warning ("Failed to list schedules: %s", e.message);
@@ -90,11 +90,11 @@ public class Schedules.Schedule : Object {
     public bool enabled { get; set; }
 
     public ListStore active_settings;
-    public ListStore inactive_settings;
+    private ListStore inactive_settings;
 
     private HashTable<string, Variant> private_args;
 
-    public Schedule.from_parsed (ScheduleManager.Parsed parsed) {
+    public Schedule (ScheduleManager.Parsed parsed) {
         id = parsed.id;
         schedule_type = parsed.type;
         name = parsed.name;
@@ -111,18 +111,13 @@ public class Schedules.Schedule : Object {
             }
         });
 
-        fill_from_table (parsed.active_settings);
-    }
-
-    private void fill_from_table (HashTable<string, Variant> table) {
-        foreach (var setting_name in table.get_keys ()) {
-            var setting = new Setting (setting_name, table[setting_name]);
-            add_setting (setting);
+        foreach (var setting_name in parsed.active_settings.get_keys ()) {
+            add_setting (new Setting (setting_name, parsed.active_settings[setting_name]));
         }
     }
 
     private ScheduleManager.Parsed to_parsed () {
-        ScheduleManager.Parsed result = {
+        return {
             id,
             schedule_type,
             name,
@@ -131,8 +126,6 @@ public class Schedules.Schedule : Object {
             Setting.list_to_table (active_settings),
             Setting.list_to_table (inactive_settings)
         };
-
-        return result;
     }
 
     public async void delete () {

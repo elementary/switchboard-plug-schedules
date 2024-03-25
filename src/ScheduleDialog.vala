@@ -103,9 +103,7 @@ public class Schedules.ScheduleDialog : Gtk.Window {
             return new SettingRow ((Setting) obj);
         });
 
-        add_button.clicked.connect (() => {
-            schedule.add_setting (new Setting ("dnd", true));
-        });
+        add_button.clicked.connect (() => schedule.add_setting (new Setting ("dnd", true)));
 
         schedule_sunset_radio.toggled.connect (() => {
             if (!schedule_sunset_radio.active) {
@@ -127,6 +125,7 @@ public class Schedules.ScheduleDialog : Gtk.Window {
         var schedule_to_time = schedule.get_manual_to_time ();
         from_time.time = schedule_from_time ?? new DateTime.now_local ();
         to_time.time = schedule_to_time ?? new DateTime.now_local ();
+
         from_time.time_changed.connect (() => update_manual_schedule (from_time.time, to_time.time));
         to_time.time_changed.connect (() => update_manual_schedule (from_time.time, to_time.time));
     }
