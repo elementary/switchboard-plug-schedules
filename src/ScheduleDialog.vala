@@ -1,4 +1,7 @@
-public class Schedules.ScheduleDialog : Gtk.Window {
+public class Schedules.ScheduleDialog : Gtk.ApplicationWindow {
+    private const string ACTION_PREFIX = "win.";
+    private const string ACTION_SCHEDULE_TYPE = "schedule-type";
+
     public Schedule schedule { get; construct; }
 
     public ScheduleDialog (Schedule schedule) {
@@ -10,6 +13,8 @@ public class Schedules.ScheduleDialog : Gtk.Window {
     }
 
     construct {
+        add_action (new PropertyAction (ACTION_SCHEDULE_TYPE, schedule, "schedule-type"));
+
         var name_entry = new Gtk.Entry ();
 
         var schedule_label = new Granite.HeaderLabel (_("Schedule"));
@@ -17,7 +22,8 @@ public class Schedules.ScheduleDialog : Gtk.Window {
         var schedule_sunset_radio = new Gtk.CheckButton.with_label (
             _("Sunset to Sunrise")
         ) {
-            active = schedule.schedule_type == DAYLIGHT
+            action_name = ACTION_PREFIX + ACTION_SCHEDULE_TYPE,
+            action_target = ScheduleManager.Type.DAYLIGHT.to_nick (),
         };
 
         var from_label = new Gtk.Label (_("From:"));
@@ -33,15 +39,15 @@ public class Schedules.ScheduleDialog : Gtk.Window {
             hexpand = true
         };
 
-        var schedule_manual_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
+        var schedule_manual_box = new Gtk.Box (HORIZONTAL, 6);
         schedule_manual_box.append (from_label);
         schedule_manual_box.append (from_time);
         schedule_manual_box.append (to_label);
         schedule_manual_box.append (to_time);
 
         var schedule_manual_radio = new Gtk.CheckButton () {
-            group = schedule_sunset_radio,
-            active = schedule.schedule_type == MANUAL
+            action_name = ACTION_PREFIX + ACTION_SCHEDULE_TYPE,
+            action_target = ScheduleManager.Type.MANUAL.to_nick (),
         };
         schedule_manual_radio.bind_property ("active", schedule_manual_box, "sensitive", SYNC_CREATE);
 
@@ -109,33 +115,7 @@ public class Schedules.ScheduleDialog : Gtk.Window {
 
         add_button.clicked.connect (() => schedule.add_setting (new Setting ("dnd", true)));
 
-        schedule_sunset_radio.toggled.connect (() => {
-            if (!schedule_sunset_radio.active) {
-                return;
-            }
-
-            schedule.schedule_type = DAYLIGHT;
-        });
-
-        schedule_manual_radio.toggled.connect (() => {
-            if (!schedule_manual_radio.active) {
-                return;
-            }
-
-            update_manual_schedule (from_time.time, to_time.time);
-        });
-
-        var schedule_from_time = schedule.get_manual_from_time ();
-        var schedule_to_time = schedule.get_manual_to_time ();
-        from_time.time = schedule_from_time ?? new DateTime.now_local ();
-        to_time.time = schedule_to_time ?? new DateTime.now_local ();
-
-        from_time.time_changed.connect (() => update_manual_schedule (from_time.time, to_time.time));
-        to_time.time_changed.connect (() => update_manual_schedule (from_time.time, to_time.time));
-    }
-
-    private void update_manual_schedule (DateTime from_time, DateTime to_time) {
-        schedule.schedule_type = MANUAL;
-        schedule.set_manual_time (from_time, to_time);
+        schedule.bind_property ("from-time", from_time, "time", SYNC_CREATE | BIDIRECTIONAL);
+        schedule.bind_property ("to-time", to_time, "time", SYNC_CREATE | BIDIRECTIONAL);
     }
 }

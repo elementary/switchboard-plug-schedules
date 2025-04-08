@@ -2,7 +2,11 @@
 public interface Schedules.ScheduleManager : Object {
     public enum Type {
         MANUAL,
-        DAYLIGHT
+        DAYLIGHT;
+
+        public string to_nick () {
+            return ((EnumClass) typeof (Type).class_peek ()).get_value (this).value_nick;
+        }
     }
 
     public struct Parsed {
@@ -26,7 +30,7 @@ public class Schedules.Schedule : Object {
 
     private static ScheduleManager? manager;
 
-    public async static void init () {
+    public static async void init () {
         schedules = new ListStore (typeof (Schedule));
         try {
             manager = yield Bus.get_proxy<ScheduleManager> (
@@ -41,7 +45,7 @@ public class Schedules.Schedule : Object {
         }
     }
 
-    private async static void reload_schedules () {
+    private static async void reload_schedules () {
         if (manager == null) {
             return;
         }
@@ -92,6 +96,16 @@ public class Schedules.Schedule : Object {
     public ListStore active_settings;
     private ListStore inactive_settings;
 
+    public DateTime from_time {
+        owned get { return double_to_date_time (private_args["from"].get_double ()); }
+        set { private_args["from"] = date_time_to_double (value); }
+    }
+
+    public DateTime to_time {
+        owned get { return double_to_date_time (private_args["to"].get_double ()); }
+        set { private_args["to"] = date_time_to_double (value); }
+    }
+
     private HashTable<string, Variant> private_args;
 
     public Schedule (ScheduleManager.Parsed parsed) {
@@ -106,7 +120,7 @@ public class Schedules.Schedule : Object {
 
         notify.connect ((pspec) => {
             var name = pspec.get_name ();
-            if (name == "id" || name == "schedule-type" || name == "name" || name == "enabled") {
+            if (name == "schedule-type" || name == "name" || name == "enabled" || name == "from" || name == "to") {
                 manager.update_schedule.begin (to_parsed ());
             }
         });
@@ -138,42 +152,6 @@ public class Schedules.Schedule : Object {
         reload_schedules.begin ();
     }
 
-    public void set_manual_time (DateTime from, DateTime to) {
-        private_args["from"] = date_time_to_double (from);
-        private_args["to"] = date_time_to_double (to);
-
-        manager.update_schedule.begin (to_parsed ());
-    }
-
-    private double date_time_to_double (DateTime date_time) {
-        double time_double = 0;
-        time_double += date_time.get_hour ();
-        time_double += (double) date_time.get_minute () / 60;
-        return time_double;
-    }
-
-    public DateTime? get_manual_from_time () {
-        if ("from" in private_args) {
-            return double_to_date_time ((double) private_args["from"]);
-        }
-
-        return null;
-    }
-
-    public DateTime? get_manual_to_time () {
-        if ("to" in private_args) {
-            return double_to_date_time ((double) private_args["to"]);
-        }
-
-        return null;
-    }
-
-    private DateTime double_to_date_time (double val) {
-        var hours = (int) val;
-        var minutes = (int) (val - hours) * 60;
-        return new DateTime.local (1, 1, 1, hours, minutes, 0);
-    }
-
     public void add_setting (Setting setting) {
         //TODO: add and bind inverted setting
         active_settings.append (setting);
@@ -190,5 +168,18 @@ public class Schedules.Schedule : Object {
             active_settings.remove (position);
             manager.update_schedule.begin (to_parsed ());
         }
+    }
+
+    private static double date_time_to_double (DateTime date_time) {
+        double time_double = 0;
+        time_double += date_time.get_hour ();
+        time_double += (double) date_time.get_minute () / 60;
+        return time_double;
+    }
+
+    private static DateTime double_to_date_time (double val) {
+        var hours = (int) val;
+        var minutes = (int) (val - hours) * 60;
+        return new DateTime.local (1, 1, 1, hours, minutes, 0);
     }
 }
