@@ -101,12 +101,12 @@ public class Schedules.Schedule : Object {
     private ListStore inactive_settings;
 
     public DateTime from_time {
-        owned get { return double_to_date_time (args["from"].get_double ()); }
+        owned get { return "from" in args ? double_to_date_time (args["from"].get_double ()) : new DateTime.now_local (); }
         set { args["from"] = date_time_to_double (value); }
     }
 
     public DateTime to_time {
-        owned get { return double_to_date_time (args["to"].get_double ()); }
+        owned get { return "to" in args ? double_to_date_time (args["to"].get_double ()) : new DateTime.now_local (); }
         set { args["to"] = date_time_to_double (value); }
     }
 
