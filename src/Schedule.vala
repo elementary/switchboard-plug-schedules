@@ -19,7 +19,6 @@ public interface Schedules.ScheduleManager : Object {
         HashTable<string, Variant> inactive_settings;
     }
 
-    public abstract async void create_schedule (Parsed parsed) throws IOError, DBusError;
     public abstract async void delete_schedule (string id) throws IOError, DBusError;
     public abstract async Parsed[] list_schedules () throws IOError, DBusError;
     public abstract async void update_schedule (Parsed parsed) throws IOError, DBusError;
@@ -88,58 +87,49 @@ public class Schedules.Schedule : Object {
         yield reload_schedules ();
     }
 
-    public string id { get; protected set; }
-    public ScheduleManager.Type schedule_type { get; set; }
-    public string name { get; set; }
-    public bool enabled { get; set; }
+    // We're using the parsed as backing store and the gobject property fucks something up there
+    // so we have to use the field directly
+    private ScheduleManager.Parsed _parsed;
+    public ScheduleManager.Parsed parsed { construct { _parsed = value; }}
+
+    public string id { get { return _parsed.id; } }
+    public ScheduleManager.Type schedule_type { get { return _parsed.type; } set { _parsed.type = value; } }
+    public string name { get { return _parsed.name; } set { _parsed.name = value; } }
+    public bool enabled { get { return _parsed.enabled; } set { _parsed.enabled = value; } }
 
     public ListStore active_settings;
     private ListStore inactive_settings;
 
     public DateTime from_time {
-        owned get { return double_to_date_time (private_args["from"].get_double ()); }
-        set { private_args["from"] = date_time_to_double (value); }
+        owned get { return double_to_date_time (args["from"].get_double ()); }
+        set { args["from"] = date_time_to_double (value); }
     }
 
     public DateTime to_time {
-        owned get { return double_to_date_time (private_args["to"].get_double ()); }
-        set { private_args["to"] = date_time_to_double (value); }
+        owned get { return double_to_date_time (args["to"].get_double ()); }
+        set { args["to"] = date_time_to_double (value); }
     }
 
-    private HashTable<string, Variant> private_args;
+    private HashTable<string, Variant> args { get { return _parsed.args; } }
 
-    public Schedule (ScheduleManager.Parsed parsed) {
-        id = parsed.id;
-        schedule_type = parsed.type;
-        name = parsed.name;
-        enabled = parsed.enabled;
+    public Schedule (owned ScheduleManager.Parsed parsed) {
+        Object (parsed: parsed);
+    }
+
+    construct {
         active_settings = new ListStore (typeof (Setting));
-        inactive_settings = Setting.list_from_table (parsed.inactive_settings);
+        inactive_settings = Setting.list_from_table (_parsed.inactive_settings);
 
-        private_args = parsed.args;
+        foreach (var setting_name in _parsed.active_settings.get_keys ()) {
+            add_setting (new Setting (setting_name, _parsed.active_settings[setting_name]));
+        }
 
         notify.connect ((pspec) => {
             var name = pspec.get_name ();
             if (name == "schedule-type" || name == "name" || name == "enabled" || name == "from" || name == "to") {
-                manager.update_schedule.begin (to_parsed ());
+                manager.update_schedule.begin (_parsed);
             }
         });
-
-        foreach (var setting_name in parsed.active_settings.get_keys ()) {
-            add_setting (new Setting (setting_name, parsed.active_settings[setting_name]));
-        }
-    }
-
-    private ScheduleManager.Parsed to_parsed () {
-        return {
-            id,
-            schedule_type,
-            name,
-            enabled,
-            private_args,
-            Setting.list_to_table (active_settings),
-            Setting.list_to_table (inactive_settings)
-        };
     }
 
     public async void delete () {
@@ -155,10 +145,10 @@ public class Schedules.Schedule : Object {
     public void add_setting (Setting setting) {
         //TODO: add and bind inverted setting
         active_settings.append (setting);
-        setting.changed.connect (() =>  manager.update_schedule.begin (to_parsed ()));
+        setting.changed.connect (sync_settings_and_update);
         setting.removed.connect (remove_setting);
 
-        manager.update_schedule.begin (to_parsed ());
+        sync_settings_and_update ();
     }
 
     private void remove_setting (Setting setting) {
@@ -166,8 +156,14 @@ public class Schedules.Schedule : Object {
         uint position;
         if (active_settings.find (setting, out position)) {
             active_settings.remove (position);
-            manager.update_schedule.begin (to_parsed ());
+            sync_settings_and_update ();
         }
+    }
+
+    private void sync_settings_and_update () {
+        _parsed.active_settings = Setting.list_to_table (active_settings);
+        _parsed.inactive_settings = Setting.list_to_table (inactive_settings);
+        manager.update_schedule.begin (_parsed);
     }
 
     private static double date_time_to_double (DateTime date_time) {
