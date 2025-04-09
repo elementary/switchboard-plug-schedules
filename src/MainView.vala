@@ -52,8 +52,8 @@ public class Schedules.MainView : Switchboard.SettingsPage {
 
         child = frame;
 
-        Schedule.init.begin (() => {
-            list.bind_model (Schedule.schedules, (obj) => {
+        Schedule.init.begin ((obj, res) => {
+            list.bind_model (Schedule.init.end (res), (obj) => {
                 return new ScheduleRow ((Schedule) obj);
             });
         });

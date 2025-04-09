@@ -19,17 +19,19 @@ public interface Schedules.ScheduleManager : Object {
         HashTable<string, Variant> inactive_settings;
     }
 
-    public abstract async void delete_schedule (string id) throws IOError, DBusError;
-    public abstract async Parsed[] list_schedules () throws IOError, DBusError;
+    public signal void items_changed (uint pos, uint removed, uint added);
+
+    public abstract async uint get_n_schedules () throws IOError, DBusError;
+    public abstract async Parsed get_schedule (uint pos) throws IOError, DBusError;
     public abstract async void update_schedule (Parsed parsed) throws IOError, DBusError;
+    public abstract async void delete_schedule (string id) throws IOError, DBusError;
 }
 
 public class Schedules.Schedule : Object {
-    public static ListStore schedules;
-
+    private static ListStore schedules;
     private static ScheduleManager? manager;
 
-    public static async void init () {
+    public static async ListStore init () {
         schedules = new ListStore (typeof (Schedule));
         try {
             manager = yield Bus.get_proxy<ScheduleManager> (
@@ -37,37 +39,30 @@ public class Schedules.Schedule : Object {
                 "io.elementary.settings-daemon",
                 "/io/elementary/settings_daemon"
             );
-            yield reload_schedules ();
+            manager.items_changed.connect (on_items_changed);
+            yield on_items_changed (0, 0, yield manager.get_n_schedules ());
         } catch (Error e) {
             //TODO: display error in list
             warning ("Failed to get proxy: %s", e.message);
         }
+        return schedules;
     }
 
-    private static async void reload_schedules () {
-        if (manager == null) {
-            return;
-        }
-
-        Schedule[] new_schedules = {};
-
+    private static async void on_items_changed (uint pos, uint removed, uint added) {
+        Schedule[] added_schedules = new Schedule[added];
         try {
-            foreach (var parsed in yield manager.list_schedules ()) {
-                new_schedules += new Schedule (parsed);
+            for (uint i = 0; i < added; i++) {
+                added_schedules[i] = new Schedule (yield manager.get_schedule (pos + i));
             }
         } catch (Error e) {
-            warning ("Failed to list schedules: %s", e.message);
+            warning ("Failed to get schedule: %s", e.message);
             return;
         }
 
-        schedules.splice (0, schedules.get_n_items (), new_schedules);
+        schedules.splice (pos, removed, added_schedules);
     }
 
-    public static async void create_new () {
-        if (manager == null) {
-            return;
-        }
-
+    public static async void create_new () requires (manager != null) {
         ScheduleManager.Parsed new_schedule = {
             Uuid.string_random (),
             DAYLIGHT,
@@ -83,8 +78,6 @@ public class Schedules.Schedule : Object {
         } catch (Error e) {
             warning ("Failed to create schedule: %s", e.message);
         }
-
-        yield reload_schedules ();
     }
 
     // We're using the parsed as backing store and the gobject property fucks something up there
@@ -112,7 +105,7 @@ public class Schedules.Schedule : Object {
 
     private HashTable<string, Variant> args { get { return _parsed.args; } }
 
-    public Schedule (owned ScheduleManager.Parsed parsed) {
+    private Schedule (owned ScheduleManager.Parsed parsed) {
         Object (parsed: parsed);
     }
 
@@ -138,8 +131,6 @@ public class Schedules.Schedule : Object {
         } catch (Error e) {
             warning ("Failed to delete schedule: %s", e.message);
         }
-
-        reload_schedules.begin ();
     }
 
     public void add_setting (Setting setting) {
