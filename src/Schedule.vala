@@ -119,7 +119,7 @@ public class Schedules.Schedule : Object {
 
         notify.connect ((pspec) => {
             var name = pspec.get_name ();
-            if (name == "schedule-type" || name == "name" || name == "enabled" || name == "from" || name == "to") {
+            if (name == "schedule-type" || name == "name" || name == "enabled" || name == "from-time" || name == "to-time") {
                 manager.update_schedule.begin (_parsed);
             }
         });
@@ -166,7 +166,7 @@ public class Schedules.Schedule : Object {
 
     private static DateTime double_to_date_time (double val) {
         var hours = (int) val;
-        var minutes = (int) (val - hours) * 60;
+        var minutes = (int) Math.round ((val - hours) * 60);
         return new DateTime.local (1, 1, 1, hours, minutes, 0);
     }
 }
